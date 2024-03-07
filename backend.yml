@@ -3,52 +3,64 @@
   become: yes
   tasks:
     - name: Disable default NodeJS Version Module
-      community.general.dnf_config_manager:
+      ansible.builtin.shell: dnf module disable nodejs -y
+
+    - name: Enable NodeJS module for V20
+      ansible.builtin.shell: dnf module disable nodejs -y
+
+    - name: Install NodeJS
+      ansible.builtin.dnf:
         name: nodejs
-        state: disabled
+        state: installed
 
+    - name: Adding Application User
+      ansible.builtin.user:
+        name: expense
 
+    - name: Clean the Old Content
+      ansible.builtin.file:
+        path: /app
+        state: absent
 
-# Print_Task_Heading "Disable default NodeJS Version Module"
-# dnf module disable nodejs -y &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Enable NodeJS module for V20"
-# dnf module enable nodejs:20 -y &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Install NodeJS"
-# dnf install nodejs -y &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Adding Application User"
-# id expense &>>$LOG
-# if [ $? -ne 0 ]; then
-#   useradd expense &>>$LOG
-# fi
-# Check_Status $?
-#
-# Print_Task_Heading "Copy Backend Service file"
-# cp backend.service /etc/systemd/system/backend.service &>>$LOG
-# Check_Status $?
-#
-# App_PreReq
-#
-# Print_Task_Heading "Download NodeJS Dependencies"
-# cd /app &>>$LOG
-# npm install &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Start Backend Service"
-# systemctl daemon-reload &>>$LOG
-# systemctl enable backend &>>$LOG
-# systemctl start backend &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Install MySQL Client"
-# dnf install mysql -y &>>$LOG
-# Check_Status $?
-#
-# Print_Task_Heading "Load Schema"
-# mysql -h mysql-dev.rdevops6a.online -uroot -p${mysql_root_password} < /app/schema/backend.sql &>>$LOG
-# Check_Status $?
+    - name: Create App Directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Download and Extract App Content
+      ansible.builtin.unarchive:
+        src: https://expense-artifacts.s3.amazonaws.com/expense-backend-v2.zip
+        dest: /app
+        remote_src: yes
+
+    - name: Download NodeJS Dependencies
+      community.general.npm:
+        path: /app
+        state: latest
+
+    - name: Copy Backend Service file
+      ansible.builtin.copy:
+        src: backend.service
+        dest: /etc/systemd/system/backend.service
+
+    - name: Install MySQL Client
+      ansible.builtin.dnf:
+        name: mysql
+        state: installed
+
+    - name: Load Schema
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        target: /app/schema/backend.sql
+        login_user: root
+        login_password: ExpenseApp@1
+        login_host: mysql-dev.rdevops6a.online
+
+    - name: Start Backend Service
+      ansible.builtin.systemd_service:
+        name: backend
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
