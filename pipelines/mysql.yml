@@ -1,6 +1,6 @@
 format_version: 10
 pipelines:
-  backend:
+  mysql:
     group: defaultGroup
     materials:
       git-da613e5:
@@ -21,8 +21,8 @@ pipelines:
             - exec:
                 arguments:
                   - ansible.sh
-                  - backend
-                command: bash #bash ansible.sh backend
+                  - mysql
+                command: bash #bash ansible.sh mysql
                 run_if: passed
     - QA:
         fetch_materials: true
@@ -36,8 +36,8 @@ pipelines:
             - exec:
                 arguments:
                   - ansible.sh
-                  - backend
-                command: bash #bash ansible.sh backend
+                  - mysql
+                command: bash #bash ansible.sh mysql
                 run_if: passed
 
     - STAGE:
@@ -52,8 +52,8 @@ pipelines:
             - exec:
                 arguments:
                   - ansible.sh
-                  - backend
-                command: bash #bash ansible.sh backend
+                  - mysql
+                command: bash #bash ansible.sh mysql
                 run_if: passed
     - PROD:
         fetch_materials: true
@@ -67,7 +67,7 @@ pipelines:
             - exec:
                 arguments:
                   - ansible.sh
-                  - backend
-                command: bash #bash ansible.sh backend
+                  - mysql
+                command: bash #bash ansible.sh mysql
                 run_if: passed
 
