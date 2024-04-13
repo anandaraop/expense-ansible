@@ -45,7 +45,7 @@
     state: import
     name: all
     target: /app/schema/backend.sql
-    login_user: "{{rds_username}"
+    login_user: "{{rds_username}}"
     login_password: "{{rds_password}}"
     login_host: "{{ rds_endpoint }}"
 
