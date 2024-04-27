@@ -2,6 +2,7 @@ format_version: 10
 pipelines:
   backend:
     group: defaultGroup
+    label_template: "${env:APP_VERSION}"
     materials:
       git-da613e5:
         git: https://github.com/raghudevopsb78/expense-ansible.git
